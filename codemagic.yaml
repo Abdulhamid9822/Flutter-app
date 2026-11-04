@@ -10,10 +10,6 @@ workflows:
     scripts:
       - name: Paketlarni olish
         script: flutter pub get
-      - name: CocoaPods o'rnatish
-        script: |
-          cd ios
-          pod install
       - name: Tahlil
         script: flutter analyze --no-fatal-infos --no-fatal-warnings
       - name: iOS build (codesign yo'q)
@@ -40,10 +36,8 @@ workflows:
     scripts:
       - name: Paketlarni olish
         script: flutter pub get
-      - name: CocoaPods o'rnatish
-        script: |
-          cd ios
-          pod install
+      - name: iOS bog'liqliklarini tayyorlash
+        script: flutter build ios --config-only --no-codesign
       - name: Imzo sozlash
         script: xcode-project use-profiles
       - name: Build raqamini oshirish
