@@ -1,0 +1,60 @@
+workflows:
+  ios-build-check:
+    name: iOS build (imzosiz)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Paketlarni olish
+        script: flutter pub get
+      - name: CocoaPods o'rnatish
+        script: |
+          cd ios
+          pod install
+      - name: Tahlil
+        script: flutter analyze --no-fatal-infos --no-fatal-warnings
+      - name: iOS build (codesign yo'q)
+        script: flutter build ios --release --no-codesign
+    artifacts:
+      - build/ios/iphoneos/*.app
+
+  ios-release:
+    name: iOS release (App Store / TestFlight)
+    instance_type: mac_mini_m2
+    max_build_duration: 90
+    integrations:
+      app_store_connect: Codemagic
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: uz.attendance.attendanceMobile
+      vars:
+        BUNDLE_ID: uz.attendance.attendanceMobile
+        APP_STORE_APPLE_ID: 0
+    scripts:
+      - name: Paketlarni olish
+        script: flutter pub get
+      - name: CocoaPods o'rnatish
+        script: |
+          cd ios
+          pod install
+      - name: Imzo sozlash
+        script: xcode-project use-profiles
+      - name: Build raqamini oshirish
+        script: |
+          LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || echo 0)
+          flutter build ipa --release \
+            --build-number=$((LATEST + 1)) \
+            --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
