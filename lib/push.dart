@@ -1,3 +1,5 @@
+import 'dart:ui' show Color;
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -12,12 +14,44 @@ class PushService {
   /// Bildirishnoma bosilganda oshadi: Arizalar tabi ochiladi.
   static final ValueNotifier<int> openExcuses = ValueNotifier(0);
 
+  /// FaceID rasm yangilash so'rovi bosilganda oshadi.
+  static final ValueNotifier<int> openFaceIdEnrollment = ValueNotifier(0);
+  static String? pendingEnrollmentCode;
+  static String? pendingEnrollmentExpiresAt;
+
+  /// Xodim yuborgan rasm olish so'rovi bosilganda oshadi.
+  static final ValueNotifier<int> openFaceIdAdminRequest = ValueNotifier(0);
+  static String? pendingAdminRequestId;
+  static String? pendingAdminRequestName;
+
   static void _handleOpen(RemoteMessage m) {
     final t = m.data['type'];
+    if (t == 'faceid_enrollment_request') {
+      pendingEnrollmentCode = m.data['code'];
+      pendingEnrollmentExpiresAt = m.data['expires_at'];
+      openFaceIdEnrollment.value++;
+      return;
+    }
+    if (t == 'faceid_enrollment_admin_request') {
+      pendingAdminRequestId = m.data['request_id'];
+      pendingAdminRequestName = m.data['employee_name'];
+      openFaceIdAdminRequest.value++;
+      return;
+    }
     if (t == 'excuse_new' || t == 'excuse_decided') {
       excuseEvents.value++;
       openExcuses.value++;
     }
+  }
+
+  static void clearPendingEnrollment() {
+    pendingEnrollmentCode = null;
+    pendingEnrollmentExpiresAt = null;
+  }
+
+  static void clearPendingAdminRequest() {
+    pendingAdminRequestId = null;
+    pendingAdminRequestName = null;
   }
 
   static bool _ready = false;
@@ -34,13 +68,42 @@ class PushService {
     try {
       await Firebase.initializeApp();
       await _local.initialize(
-          settings: const InitializationSettings(android: AndroidInitializationSettings('@mipmap/ic_launcher')));
+          settings: const InitializationSettings(
+              android: AndroidInitializationSettings('ic_notification'),
+              iOS: DarwinInitializationSettings(
+                requestAlertPermission: false,
+                requestBadgePermission: false,
+                requestSoundPermission: false,
+              )));
       final android = _local.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
       await android?.createNotificationChannel(_channel);
       await android?.requestNotificationsPermission();
+      if (defaultTargetPlatform == TargetPlatform.iOS) {
+        await FirebaseMessaging.instance.requestPermission(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+        await FirebaseMessaging.instance
+            .setForegroundNotificationPresentationOptions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+      }
       FirebaseMessaging.onMessage.listen((m) {
         final t = m.data['type'];
         if (t == 'excuse_new' || t == 'excuse_decided') excuseEvents.value++;
+        if (t == 'faceid_enrollment_request') {
+          pendingEnrollmentCode = m.data['code'];
+          pendingEnrollmentExpiresAt = m.data['expires_at'];
+          openFaceIdEnrollment.value++;
+        }
+        if (t == 'faceid_enrollment_admin_request') {
+          pendingAdminRequestId = m.data['request_id'];
+          pendingAdminRequestName = m.data['employee_name'];
+          openFaceIdAdminRequest.value++;
+        }
         _showForeground(m);
       });
       FirebaseMessaging.onMessageOpenedApp.listen(_handleOpen);
@@ -84,13 +147,24 @@ class PushService {
   static Future<void> _showForeground(RemoteMessage m) async {
     final n = m.notification;
     if (n == null) return;
+    // iOS'da notification APNs orqali ko'rsatiladi; lokal bildirishnoma
+    // bilan takrorlanmasligi uchun bu yerda qo'shimcha ko'rsatmaymiz.
+    if (defaultTargetPlatform == TargetPlatform.iOS) return;
     await _local.show(
       id: m.hashCode,
       title: n.title,
       body: n.body,
       notificationDetails: NotificationDetails(
-        android: AndroidNotificationDetails(_channel.id, _channel.name,
-            channelDescription: _channel.description, importance: Importance.high, priority: Priority.high),
+        android: AndroidNotificationDetails(
+          _channel.id,
+          _channel.name,
+          channelDescription: _channel.description,
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: 'ic_notification',
+          largeIcon: const DrawableResourceAndroidBitmap('ic_notification_large'),
+          color: const Color(0xFFF95502),
+        ),
       ),
     );
   }

@@ -103,8 +103,8 @@ const Map<String, List<String>> _dict = {
   'Sabab': ['Причина', 'Reason'],
   'Yuborish': ['Отправить', 'Send'],
   'Xodimga javob (ixtiyoriy)': ['Ответ сотруднику (необязательно)', 'Reply to employee (optional)'],
-  'Davomat Pro': ['Davomat Pro', 'Davomat Pro'],
-  'DAVOMAT PRO': ['DAVOMAT PRO', 'DAVOMAT PRO'],
+  'FacePay': ['FacePay', 'FacePay'],
+  'FACEPAY': ['FACEPAY', 'FACEPAY'],
   'Xodimlar davomati va oyligi': ['Посещаемость и зарплата сотрудников', 'Employee attendance and salary'],
   'Telefon raqam': ['Номер телефона', 'Phone number'],
   'PIN': ['PIN', 'PIN'],
@@ -157,6 +157,14 @@ const Map<String, List<String>> _dict = {
   'Necha kun': ['Сколько дней', 'How many days'],
   'Izoh (ixtiyoriy)': ['Комментарий (необязательно)', 'Note (optional)'],
   'Jarima': ['Штраф', 'Penalty'],
+  'Kechikish va erta ketish': ['Опоздания и ранний уход', 'Late and early leave'],
+  'Qo\'lda qo\'shilgan': ['Добавлено вручную', 'Added manually'],
+  'Jarimasiz hisoblangan': ['Начислено без штрафов', 'Gross earned'],
+  'Jarima ayirilgandan keyin': ['После вычета штрафа', 'After penalty deduction'],
+  'Hisobotdan keyingi yangi jarima balansdan ushlandi.': [
+    'Новый штраф после отчёта удержан из баланса.',
+    'A new penalty after the report was deducted from the balance.'
+  ],
   'Izoh': ['Комментарий', 'Note'],
   'Ariza tasdiqlangan — jarima yo\'q': ['Заявка одобрена — штрафа нет', 'Request approved — no penalty'],
   'Saqlash': ['Сохранить', 'Save'],
@@ -218,6 +226,10 @@ const Map<String, List<String>> _dict = {
 // Interpolatsiyali matnlar uchun bo'laklar (uz -> [ru, en]); uzunlari birinchi.
 const Map<String, List<String>> _frag = {
   'Ketish vaqti (so\'ralgan)': ['Время ухода (запрошено)', 'Leaving time (requested)'],
+  'Kutilmoqda': ['Ожидает', 'Pending'],
+  'Tasdiqlangan': ['Одобрена', 'Approved'],
+  'Rad etilgan': ['Отклонена', 'Rejected'],
+  'Hammasi': ['Все', 'All'],
   'Kelish vaqti (so\'ralgan)': ['Время прихода (запрошено)', 'Arrival time (requested)'],
   'Ketish vaqti': ['Время ухода', 'Leaving time'],
   'Kelish vaqti': ['Время прихода', 'Arrival time'],

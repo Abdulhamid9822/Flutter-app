@@ -42,12 +42,14 @@ class DashboardView extends StatefulWidget {
 }
 
 class _DashboardViewState extends State<DashboardView> {
-  late DateTimeRange _range = monthRange();
+  late DateTimeRange _range;
   late Future<Map<String, dynamic>> _future;
 
   @override
   void initState() {
     super.initState();
+    // Admin uchun dashboard bugungi kun bilan ochiladi.
+    _range = widget.employeeMode ? monthRange() : todayRange();
     _load();
   }
 

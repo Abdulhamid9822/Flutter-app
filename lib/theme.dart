@@ -16,30 +16,31 @@ class ThemeController {
   }
 }
 
+/// Ilova ranglari logotipdagi to'q sariq (orange) rangga moslashtirilgan.
 class AppColors {
-  static const brandPrimary = Color(0xFF0284C7);
-  static const brandCyan = Color(0xFF06B6D4);
-  static const brandIndigo = Color(0xFF6366F1);
+  static const brandPrimary = Color(0xFFFA5602);
+  static const brandCyan = Color(0xFFFF8A3D);
+  static const brandIndigo = Color(0xFFC2410C);
 
   static const statusPresent = Color(0xFF10B981);
   static const statusLate = Color(0xFFF59E0B);
   static const statusAbsent = Color(0xFFEF4444);
   static const statusEarly = Color(0xFF8B5CF6);
 
-  static const darkBg = Color(0xFF090E17);
-  static const darkCard = Color(0xFF131F33);
-  static const darkElevated = Color(0xFF17253D);
-  static const darkBorder = Color(0xFF223654);
-  static const darkText = Color(0xFFF8FAFC);
-  static const darkSubtext = Color(0xFF94A3B8);
-  static const darkMuted = Color(0xFF64748B);
+  static const darkBg = Color(0xFF0C0907);
+  static const darkCard = Color(0xFF1A1210);
+  static const darkElevated = Color(0xFF251A16);
+  static const darkBorder = Color(0xFF3A2822);
+  static const darkText = Color(0xFFF8F5F2);
+  static const darkSubtext = Color(0xFFB8A79E);
+  static const darkMuted = Color(0xFF8C7A70);
 
-  static const lightBg = Color(0xFFF1F5F9);
+  static const lightBg = Color(0xFFF7F1EC);
   static const lightCard = Color(0xFFFFFFFF);
-  static const lightBorder = Color(0xFFCBD5E1);
-  static const lightText = Color(0xFF0F172A);
-  static const lightSubtext = Color(0xFF475569);
-  static const lightMuted = Color(0xFF94A3B8);
+  static const lightBorder = Color(0xFFE4D4CB);
+  static const lightText = Color(0xFF201511);
+  static const lightSubtext = Color(0xFF5E4A41);
+  static const lightMuted = Color(0xFF9C8B82);
 }
 
 bool isDarkOf(BuildContext c) => Theme.of(c).brightness == Brightness.dark;
@@ -49,8 +50,8 @@ BoxDecoration appScreenBackground(bool isDark) => BoxDecoration(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: isDark
-            ? const [Color(0xFF0B1426), Color(0xFF080D18), Color(0xFF04060C)]
-            : const [Color(0xFFEBF3FA), Color(0xFFF1F5F9), Color(0xFFF8FAFC)],
+            ? const [Color(0xFF1D0F08), Color(0xFF100A07), Color(0xFF070504)]
+            : const [Color(0xFFFFF1E7), Color(0xFFF7F1EC), Color(0xFFFCFAF8)],
       ),
     );
 
@@ -102,7 +103,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: d ? AppColors.darkElevated : const Color(0xFFF8FAFC),
+        fillColor: d ? AppColors.darkElevated : const Color(0xFFFCF7F3),
         border: border(appCardBorder(d)),
         enabledBorder: border(appCardBorder(d)),
         focusedBorder: border(AppColors.brandPrimary, 2),

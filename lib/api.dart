@@ -9,7 +9,18 @@ import 'push.dart';
 class ApiException implements Exception {
   final String message;
   final bool unauthorized;
-  ApiException(this.message, {this.unauthorized = false});
+
+  /// Serverga umuman ulanib bo'lmagan holat (internet yo'q, timeout va h.k.).
+  final bool network;
+  final int? statusCode;
+
+  ApiException(
+    this.message, {
+    this.unauthorized = false,
+    this.network = false,
+    this.statusCode,
+  });
+
   @override
   String toString() => message;
 }
@@ -19,10 +30,16 @@ class UserInfo {
   final String role;
   final int? employeeId;
   final String lang;
-  UserInfo(this.name, this.role, this.employeeId, [this.lang = 'uz']);
+  final String account;
+  UserInfo(this.name, this.role, this.employeeId,
+      [this.lang = 'uz', this.account = '']);
 
   factory UserInfo.fromJson(Map<String, dynamic> j) => UserInfo(
-      j['name'] ?? '', j['role'] ?? 'employee', j['employee_id'] as int?, j['lang'] ?? 'uz');
+      j['name'] ?? '',
+      j['role'] ?? 'employee',
+      j['employee_id'] as int?,
+      j['lang'] ?? 'uz',
+      (j['account'] ?? '').toString());
 
   bool get isEmployee => role == 'employee';
   String get roleLabel => tr(
@@ -59,7 +76,8 @@ class Api {
             'name': user!.name,
             'role': user!.role,
             'employee_id': user!.employeeId,
-            'lang': user!.lang
+            'lang': user!.lang,
+            'account': user!.account
           }));
     }
   }
@@ -87,13 +105,17 @@ class Api {
       final data = jsonDecode(res.body) as Map<String, dynamic>;
       if (data['success'] != true) {
         throw ApiException(tr(data['error']?.toString() ?? 'Xatolik'),
-            unauthorized: res.statusCode == 401 && action != 'login');
+            unauthorized: res.statusCode == 401 && action != 'login',
+            statusCode: res.statusCode);
       }
       return data;
     } on ApiException {
       rethrow;
     } catch (_) {
-      throw ApiException(tr('Serverga ulanib bo\'lmadi. Internet va server manzilini tekshiring.'));
+      throw ApiException(
+        tr('Serverga ulanib bo\'lmadi. Internet va server manzilini tekshiring.'),
+        network: true,
+      );
     }
   }
 
@@ -148,6 +170,71 @@ class Api {
         'from': ?from,
         'to': ?to,
         if (employeeId != null) 'employee_id': '$employeeId',
+      });
+
+  /// FaceID skan natijasini MySQL attendance_data jadvaliga yozadi.
+  /// Xodim faqat o'z nomidan yozadi. Admin/branch esa o'z accountidagi
+  /// xodim nomidan ham yozishi mumkin (`employeeId` orqali).
+  Future<Map<String, dynamic>> faceIdAttendance({
+    required String direction,
+    required DateTime timestamp,
+    double? confidence,
+    int? employeeId,
+  }) =>
+      _request('faceid_attendance', body: {
+        'direction': direction,
+        'timestamp': timestamp.toIso8601String(),
+        'confidence': ?confidence,
+        'employee_id': ?employeeId,
+      });
+
+  /// Admin belgilagan muassasa joylashuvini oladi. Bu sozlama accountdagi
+  /// barcha qurilmalar uchun umumiy.
+  Future<Map<String, dynamic>> faceIdSettingsGet() =>
+      _request('faceid_settings_get');
+
+  Future<Map<String, dynamic>> faceIdSettingsSet({
+    required String name,
+    required double latitude,
+    required double longitude,
+    required double radius,
+  }) =>
+      _request('faceid_settings_set', body: {
+        'name': name,
+        'latitude': latitude,
+        'longitude': longitude,
+        'radius': radius,
+      });
+
+  Future<void> faceIdSettingsClear() =>
+      _request('faceid_settings_clear', body: {});
+
+  /// Admin xodimga bir martalik yuz rasmi olish ruxsatini beradi.
+  Future<Map<String, dynamic>> faceIdEnrollmentGrant({int? employeeId}) =>
+      _request('faceid_enrollment_grant', body: {
+        if (employeeId != null) 'employee_id': employeeId,
+      });
+
+  /// Xodim admin bergan 6 xonali kodni tekshiradi (bir marta ishlaydi).
+  Future<Map<String, dynamic>> faceIdEnrollmentValidate(String code) =>
+      _request('faceid_enrollment_validate', body: {'code': code});
+
+  /// Xodim yuz rasmini yangilash uchun admin ruxsatini so'raydi.
+  Future<Map<String, dynamic>> faceIdEnrollmentRequestCreate() =>
+      _request('faceid_enrollment_request_create', body: {});
+
+  /// Admin uchun kutilayotgan rasm olish so'rovlari.
+  Future<Map<String, dynamic>> faceIdEnrollmentRequests() =>
+      _request('faceid_enrollment_requests');
+
+  /// Admin so'rovni tasdiqlaydi yoki rad etadi.
+  Future<Map<String, dynamic>> faceIdEnrollmentRequestDecide(
+    int requestId,
+    String decision,
+  ) =>
+      _request('faceid_enrollment_request_decide', body: {
+        'request_id': requestId,
+        'decision': decision,
       });
 
   Future<Map<String, dynamic>> dashboard(String from, String to, {int? spotId}) =>
