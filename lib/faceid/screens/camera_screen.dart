@@ -185,13 +185,15 @@ class _FaceIdCameraScreenState extends State<FaceIdCameraScreen> {
     }
 
     if (selected.faceCount == 0) {
+      final details = selected.error?.trim();
       await _showInfo(
         icon: Icons.face_retouching_off_rounded,
         color: AppColors.yellow,
         title: 'Yuz aniqlanmadi',
-        message:
-            "Rasmda yuz topilmadi. Kameraga yaqinroq turing va yaxshi "
-            "yorug'likda qayta urinib ko'ring.",
+        message: details == null || details.isEmpty
+            ? "Rasmda yuz topilmadi. Kameraga yaqinroq turing va yaxshi "
+                  "yorug'likda qayta urinib ko'ring."
+            : "Rasmni tahlil qilib bo'lmadi.\n$details",
       );
       return;
     }

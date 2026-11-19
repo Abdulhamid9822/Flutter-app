@@ -14,6 +14,11 @@ workflows:
         script: flutter analyze --no-fatal-infos --no-fatal-warnings
       - name: iOS build (codesign yo'q)
         script: flutter build ios --release --no-codesign
+      - name: ML Kit resurslarini tekshirish
+        script: |
+          APP=build/ios/iphoneos/Runner.app
+          test -d "$APP/GoogleMVFaceDetectorResources.bundle"
+          test -f "$APP/GoogleMVFaceDetectorResources.bundle/fssd_100_8bit_v1.tflite"
       - name: Imzosiz IPA yig'ish
         script: |
           cd build/ios/iphoneos
